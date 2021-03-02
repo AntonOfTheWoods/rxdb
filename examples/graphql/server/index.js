@@ -100,6 +100,8 @@ export async function run() {
             // sorted by updatedAt and primary
             const sortedDocuments = documents.sort(sortByUpdatedAtAndPrimary);
 
+            log('## sortedDocuments');
+            log(sortedDocuments);
             // only return where updatedAt >= minUpdatedAt
             const filterForMinUpdatedAtAndId = sortedDocuments.filter(doc => {
                 if (!args.updatedAt) {
@@ -119,7 +121,8 @@ export async function run() {
                     }
                 }
             });
-
+            log('## filterForMinUpdatedAtAndId');
+            log(filterForMinUpdatedAtAndId);
             // limit
             const limited = filterForMinUpdatedAtAndId.slice(0, args.limit);
             return limited;

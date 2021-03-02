@@ -48,7 +48,7 @@ console.log('hostname: ' + window.location.hostname);
 const syncURL = 'http://' + window.location.hostname + ':' + GRAPHQL_PORT + GRAPHQL_PATH;
 
 
-const batchSize = 5;
+const batchSize = 10000;
 
 const pullQueryBuilder = pullQueryBuilderFromRxSchema(
     'hero',
@@ -196,23 +196,26 @@ async function run() {
 
     // subscribe to heroes list and render the list on change
     heroesList.innerHTML = 'Subscribe to query..';
-    collection.find()
-        .sort({
-            name: 'asc'
-        })
-        .$.subscribe(function (heroes) {
-            let html = '';
-            heroes.forEach(function (hero) {
-                html += `
-                    <li class="hero-item">
-                        <div class="color-box" style="background:${hero.color}"></div>
-                        <div class="name">${hero.name}</div>
-                        <div class="delete-icon" onclick="window.deleteHero('${hero.primary}')">DELETE</div>
-                    </li>
-                `;
-            });
-            heroesList.innerHTML = html;
-        });
+    // collection.find()
+    //     // .sort({
+    //     //     name: 'asc'
+    //     // })
+    //     .$.subscribe(function (heroes) {
+    //         let html = '';
+    //         // console.log(JSON.stringify(heroes));
+    //         // heroes.forEach(function (hero) {
+    //         //     html += `
+    //         //         <li class="hero-item">
+    //         //             <div class="color-box" style="background:${hero.color}"></div>
+    //         //             <div class="name">${hero.name}</div>
+    //         //             <div class="delete-icon" onclick="window.deleteHero('${hero.primary}')">DELETE</div>
+    //         //         </li>
+    //         //     `;
+    //         // });
+    //         html += `<p>there were ${heroes.length} values returned at ${Date()}</p>`;
+    //         heroesList.innerHTML = html;
+    //     });
+    heroesList.innerHTML = 'ignored Subscribe to query..';
 
 
     // set up click handlers
