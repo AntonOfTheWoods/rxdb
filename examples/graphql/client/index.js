@@ -40,6 +40,9 @@ addRxPlugin(RxDBDevModePlugin);
 import { RxDBValidatePlugin } from 'rxdb/plugins/validate';
 addRxPlugin(RxDBValidatePlugin);
 
+import { RxDBMigrationPlugin } from 'rxdb/plugins/migration';
+addRxPlugin(RxDBMigrationPlugin);
+
 import { RxDBUpdatePlugin } from 'rxdb/plugins/update';
 addRxPlugin(RxDBUpdatePlugin);
 
@@ -58,6 +61,7 @@ import {
 } from '../shared';
 
 const insertButton = document.querySelector('#insert-button');
+const migrateButton = document.querySelector('#migrate-button');
 const heroesList = document.querySelector('#heroes-list');
 const leaderIcon = document.querySelector('#leader-icon');
 const storageField = document.querySelector('#storage-key');
@@ -163,12 +167,32 @@ async function run() {
     });
 
     heroesList.innerHTML = 'Create collection..';
-    await db.addCollections({
-        hero: {
-            schema: heroSchema
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('v') === "1") {
+        const v1 = { ...heroSchema,
+            version: 1,
+            properties: {...heroSchema.properties, createdAt: { type: 'number' }},
+            indexes: [...heroSchema.indexes, "createdAt"]
         }
-    });
-
+        await db.addCollections({
+            hero: {
+                schema: v1,
+                migrationStrategies: {
+                    1: function (oldDoc) {
+                        return oldDoc;
+                    }
+                }
+            }
+        });
+        console.log("it was run with v1")
+    } else {
+        await db.addCollections({
+            hero: {
+                schema: heroSchema
+            }
+        });
+        console.log("it was run with v0")
+    }
 
     // set up replication
     if (doSync()) {
@@ -194,6 +218,10 @@ async function run() {
              */
             liveInterval: 1000 * 60 * 10, // 10 minutes
             deletedFlag: 'deleted'
+        });
+        replicationState.send$.subscribe((change) => {
+            console.log("I just replicated something up for hero");
+            console.dir(change);
         });
 
         setInterval(async () => {
@@ -337,6 +365,10 @@ async function run() {
         await db.hero.insert(obj);
         document.querySelector('input[name="name"]').value = '';
         document.querySelector('input[name="color"]').value = '';
+    };
+    migrateButton.onclick = async function () {
+        console.log('migrating heroes:');
+        window.location.href = '/?v=1';
     };
 }
 run().catch(err => {
